@@ -2,7 +2,7 @@
 #define __COCANB_H__
 
 /**
- * @brief Converts a text into Cocánb
+ * @brief Converts input text into Cocánb
  * 
  * @return const char* 
  */
