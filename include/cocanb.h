@@ -46,7 +46,7 @@ extern "C" {
  *          `COCANB_ERR_QUOTE_OVERFLOW` - the input has more nested quotes than
  *          is allowed.
  */
-int cocanb_encode(const char *__text, char **__dest, int __maxq);
+int cocanb_encode(const char *text, char **dest, int maxq);
 
 #ifdef __cplusplus
 }
