@@ -133,6 +133,72 @@ int cocanb_encode(const char *__text, char **__dest, int __maxq)
       break;
     case '\"':
     case '\'':
+      if (word_len != 0) {
+        int quotient = word_len / 26;
+        int remainder = word_len % 26;
+        int suf_len = strlen(suf_stack[suf_ptr]);
+        suf_stack[suf_ptr] = realloc(suf_stack[suf_ptr], (suf_len + quotient + 3) * sizeof(char));
+        if (suf_stack[suf_ptr] == NULL) {
+          return 1;
+        }
+        suf_stack[suf_ptr][suf_len] = tolower(word[word_len - 1]);
+        for (int j = 0; j < quotient; j++) {
+          suf_stack[suf_ptr][suf_len + j + 1] = '@';
+        }
+        suf_stack[suf_ptr][suf_len + quotient + 1] = 96 + remainder;
+        suf_stack[suf_ptr][suf_len + quotient + 2] = 0;
+
+        char temp[strlen(*__dest) + word_len];
+        strcpy(temp, *__dest);
+        strncat(temp, word, word_len - 1);
+        free(*__dest);
+        *__dest = calloc(strlen(*__dest) + word_len, sizeof(char));
+        if (*__dest == NULL) {
+          return 1;
+        }
+        strcpy(*__dest, temp);
+
+        free(word);
+        word = calloc(1, sizeof(char));
+        if (word == NULL) {
+          return 1;
+        }
+        word_len = 0;
+      }
+      if (qt_ptr == -1 || qt_stack[qt_ptr] != __text[i]) {
+        if (qt_ptr + 1 == __maxq) {
+          return 1;
+        }
+        qt_stack[++qt_ptr] = __text[i];
+        suf_stack[++suf_ptr] = calloc(4, sizeof(char));
+        if (suf_stack[suf_ptr] == NULL) {
+          return 1;
+        }
+        strcpy(suf_stack[suf_ptr], "non");
+      } else {
+        if (suf_ptr != qt_ptr--) {
+          char temp[strlen(*__dest) + strlen(suf_stack[suf_ptr]) + 1];
+          int temp_len = strlen(*__dest) + strlen(suf_stack[suf_ptr]);
+          strcpy(temp, *__dest);
+          strcat(temp, suf_stack[suf_ptr]);
+          free(*__dest);
+          free(suf_stack[suf_ptr--]);
+          *__dest = calloc(temp_len + 1, sizeof(char));
+          if (*__dest == NULL) {
+            return 1;
+          }
+          strcpy(*__dest, temp);
+        }
+      }
+      {
+        int len = strlen(*__dest);
+        *__dest = realloc(*__dest, (len + 1) * sizeof(char));
+        if (*__dest == NULL) {
+          return 1;
+        }
+        (*__dest)[len] = __text[i];
+        (*__dest)[len + 1] = 0;
+      }
       break;
     case ',':
     case ':':
@@ -185,9 +251,24 @@ int cocanb_encode(const char *__text, char **__dest, int __maxq)
     strcpy(*__dest, temp);
   }
 
-  free(word);
+  if (suf_ptr != -1) {
+    if (qt_ptr != -1) {
+      return 1;
+    }
+    char temp[strlen(*__dest) + strlen(suf_stack[suf_ptr])];
+    int temp_len = strlen(*__dest) + strlen(suf_stack[suf_ptr]);
+    strcpy(temp, *__dest);
+    strcat(temp, suf_stack[suf_ptr]);
+    free(*__dest);
+    free(suf_stack[suf_ptr--]);
+    *__dest = calloc(temp_len + 1, sizeof(char));
+    if (*__dest == NULL) {
+      return 1;
+    }
+    strcpy(*__dest, temp);
+  }
 
-  printf("%s\n", *__dest);
+  free(word);
 
   return 0;
 }

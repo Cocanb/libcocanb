@@ -45,8 +45,8 @@ int main()
   TCase *tc;
   SRunner *sr;
 
-  s = suite_create("Cocánb");
-  tc = tcase_create("Core");
+  s = suite_create("Cocánb Basic Tests");
+  tc = tcase_create("Basic");
   tcase_add_test(tc, test_basic);
   tcase_add_test(tc, test_punctuation);
   tcase_add_test(tc, test_space_punctuation);
