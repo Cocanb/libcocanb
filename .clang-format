@@ -3,5 +3,8 @@ BasedOnStyle: Webkit
 IndentWidth: 2
 ---
 Language: Cpp
+AlignArrayOfStructures: Right
+ConstructorInitializerIndentWidth: 2
+ContinuationIndentWidth: 2
 DerivePointerAlignment: false
 PointerAlignment: Right
