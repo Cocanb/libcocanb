@@ -60,7 +60,7 @@ START_TEST(test_quote_overflow)
 {
   char *output;
   const char *input = "Hello \"foo \'bar \"baz\"\'\"!";
-  ck_assert_int_eq(cocanb_encode(input, &output, 1), 1);
+  ck_assert_int_eq(cocanb_encode(input, &output, 1), 3);
 }
 END_TEST
 
@@ -68,7 +68,7 @@ START_TEST(test_unclosed_quote)
 {
   char *output;
   const char *input = "Hello \"foo";
-  ck_assert_int_eq(cocanb_encode(input, &output, 1), 1);
+  ck_assert_int_eq(cocanb_encode(input, &output, 1), 2);
 }
 END_TEST
 

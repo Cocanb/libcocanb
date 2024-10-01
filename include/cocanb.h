@@ -20,22 +20,31 @@
 #define __COCANB_H__
 
 #define COCANB_NOERR 0
-#define COCANB_ERR 1
+#define COCANB_ERR_ALLOC 1
+#define COCANB_ERR_MISMATCHED_QUOTE 2
+#define COCANB_ERR_QUOTE_OVERFLOW 3
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 /**
+ * @brief Encodes into Cocánb
+ *
  * Encodes input text into Cocánb. Returns `COCANB_NOERR` if the text could be
- * encoded successfully, and `COCANB_ERR` otherwise.
+ * encoded successfully, and another integer if the translation fails.
  *
- * @param text Text to encode
- * @param dest Pointer to encode into. Has to be `free`d after use.
- * @param maxq Maximum allowed nested quotes.
+ * @param[in]  text Text to encode
+ * @param[out] dest Pointer to encode into. Has to be `free`d after use.
+ * @param[in]  maxq Maximum allowed nested quotes.
  *
- * @returns `COCANB_NOERR` (0) if successful, `COCANB_ERR` (1) if not
- * successful
+ * @returns `COCANB_NOERR` - translation was successful.
+ *          `COCANB_ERR_ALLOC` - the translator could not allocate the required
+ *          memory to encode the input.
+ *          `COCANB_ERR_MISMATCHED_QUOTE` - the input has unclosed or otherwise
+ *          mismatching quotes.
+ *          `COCANB_ERR_QUOTE_OVERFLOW` - the input has more nested quotes than
+ *          is allowed.
  */
 int cocanb_encode(const char *__text, char **__dest, int __maxq);
 

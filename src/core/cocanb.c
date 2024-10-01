@@ -30,6 +30,7 @@ int cocanb_encode(const char *__text, char **__dest, int __maxq)
 
   char *word = calloc(1, sizeof(char));
   if (word == NULL) {
+    free(*__dest);
     return 1;
   }
   int word_len = 0;
@@ -39,6 +40,8 @@ int cocanb_encode(const char *__text, char **__dest, int __maxq)
 
   suf_stack[0] = calloc(4, sizeof(char));
   if (suf_stack[0] == NULL) {
+    free(*__dest);
+    free(word);
     return 1;
   }
   strcpy(suf_stack[0], "non");
@@ -60,6 +63,11 @@ int cocanb_encode(const char *__text, char **__dest, int __maxq)
         int suf_len = strlen(suf_stack[suf_ptr]);
         suf_stack[suf_ptr] = realloc(suf_stack[suf_ptr], (suf_len + quotient + 3) * sizeof(char));
         if (suf_stack[suf_ptr] == NULL) {
+          free(__dest);
+          free(word);
+          while (--suf_ptr != -1) {
+            free(suf_stack[suf_ptr]);
+          }
           return 1;
         }
         suf_stack[suf_ptr][suf_len] = tolower(word[word_len - 1]);
@@ -75,6 +83,10 @@ int cocanb_encode(const char *__text, char **__dest, int __maxq)
         free(*__dest);
         *__dest = calloc(strlen(*__dest) + word_len, sizeof(char));
         if (*__dest == NULL) {
+          free(word);
+          while (suf_ptr != -1) {
+            free(suf_stack[suf_ptr--]);
+          }
           return 1;
         }
         strcpy(*__dest, temp);
@@ -82,6 +94,10 @@ int cocanb_encode(const char *__text, char **__dest, int __maxq)
         free(word);
         word = calloc(1, sizeof(char));
         if (word == NULL) {
+          free(*__dest);
+          while (suf_ptr != -1) {
+            free(suf_stack[suf_ptr--]);
+          }
           return 1;
         }
         word_len = 0;
@@ -96,6 +112,11 @@ int cocanb_encode(const char *__text, char **__dest, int __maxq)
         int suf_len = strlen(suf_stack[suf_ptr]);
         suf_stack[suf_ptr] = realloc(suf_stack[suf_ptr], (suf_len + quotient + 3) * sizeof(char));
         if (suf_stack[suf_ptr] == NULL) {
+          free(*__dest);
+          free(word);
+          while (--suf_ptr != -1) {
+            free(suf_stack[suf_ptr]);
+          }
           return 1;
         }
         suf_stack[suf_ptr][suf_len] = tolower(word[word_len - 1]);
@@ -114,6 +135,10 @@ int cocanb_encode(const char *__text, char **__dest, int __maxq)
         free(suf_stack[suf_ptr--]);
         *__dest = calloc(temp_len + 2, sizeof(char));
         if (*__dest == NULL) {
+          free(word);
+          while (suf_ptr != -1) {
+            free(suf_stack[suf_ptr--]);
+          }
           return 1;
         }
         strcpy(*__dest, temp);
@@ -122,6 +147,10 @@ int cocanb_encode(const char *__text, char **__dest, int __maxq)
         free(word);
         word = calloc(1, sizeof(char));
         if (word == NULL) {
+          free(*__dest);
+          while (suf_ptr != -1) {
+            free(suf_stack[suf_ptr--]);
+          }
           return 1;
         }
         word_len = 0;
@@ -135,6 +164,10 @@ int cocanb_encode(const char *__text, char **__dest, int __maxq)
         free(suf_stack[suf_ptr--]);
         *__dest = calloc(temp_len + 2, sizeof(char));
         if (*__dest == NULL) {
+          free(word);
+          while (suf_ptr != -1) {
+            free(suf_stack[suf_ptr--]);
+          }
           return 1;
         }
         strcpy(*__dest, temp);
@@ -143,6 +176,10 @@ int cocanb_encode(const char *__text, char **__dest, int __maxq)
         free(word);
         word = calloc(1, sizeof(char));
         if (word == NULL) {
+          free(*__dest);
+          while (suf_ptr != -1) {
+            free(suf_stack[suf_ptr--]);
+          }
           return 1;
         }
         word_len = 0;
@@ -156,6 +193,11 @@ int cocanb_encode(const char *__text, char **__dest, int __maxq)
         int suf_len = strlen(suf_stack[suf_ptr]);
         suf_stack[suf_ptr] = realloc(suf_stack[suf_ptr], (suf_len + quotient + 3) * sizeof(char));
         if (suf_stack[suf_ptr] == NULL) {
+          free(*__dest);
+          free(word);
+          while (--suf_ptr != -1) {
+            free(suf_stack[suf_ptr]);
+          }
           return 1;
         }
         suf_stack[suf_ptr][suf_len] = tolower(word[word_len - 1]);
@@ -178,17 +220,31 @@ int cocanb_encode(const char *__text, char **__dest, int __maxq)
         free(word);
         word = calloc(1, sizeof(char));
         if (word == NULL) {
+          free(*__dest);
+          while (suf_ptr != -1) {
+            free(suf_stack[suf_ptr--]);
+          }
           return 1;
         }
         word_len = 0;
       }
       if (qt_ptr == -1 || qt_stack[qt_ptr] != __text[i]) {
         if (qt_ptr + 1 == __maxq) {
-          return 1;
+          free(*__dest);
+          free(word);
+          while (suf_ptr != -1) {
+            free(suf_stack[suf_ptr--]);
+          }
+          return 3;
         }
         qt_stack[++qt_ptr] = __text[i];
         suf_stack[++suf_ptr] = calloc(4, sizeof(char));
         if (suf_stack[suf_ptr] == NULL) {
+          free(*__dest);
+          free(word);
+          while (--suf_ptr != -1) {
+            free(suf_stack[suf_ptr]);
+          }
           return 1;
         }
         strcpy(suf_stack[suf_ptr], "non");
@@ -202,6 +258,10 @@ int cocanb_encode(const char *__text, char **__dest, int __maxq)
           free(suf_stack[suf_ptr--]);
           *__dest = calloc(temp_len + 1, sizeof(char));
           if (*__dest == NULL) {
+            free(word);
+            while (suf_ptr != -1) {
+              free(suf_stack[suf_ptr--]);
+            }
             return 1;
           }
           strcpy(*__dest, temp);
@@ -211,6 +271,10 @@ int cocanb_encode(const char *__text, char **__dest, int __maxq)
         int len = strlen(*__dest);
         *__dest = realloc(*__dest, (len + 1) * sizeof(char));
         if (*__dest == NULL) {
+          free(word);
+          while (suf_ptr-- != -1) {
+            free(suf_stack[suf_ptr]);
+          }
           return 1;
         }
         (*__dest)[len] = __text[i];
@@ -225,12 +289,21 @@ int cocanb_encode(const char *__text, char **__dest, int __maxq)
       if (suf_ptr == qt_ptr) {
         suf_stack[++suf_ptr] = calloc(4, sizeof(char));
         if (suf_stack[suf_ptr] == NULL) {
+          free(*__dest);
+          free(word);
+          while (--suf_ptr != -1) {
+            free(suf_stack[suf_ptr]);
+          }
           return 1;
         }
         strcpy(suf_stack[suf_ptr], "non");
       }
       word = realloc(word, (strlen(word) + 2) * sizeof(char));
       if (word == NULL) {
+        free(*__dest);
+        while (suf_ptr != -1) {
+          free(suf_stack[suf_ptr--]);
+        }
         return 1;
       }
       word[word_len] = tolower(__text[i]);
@@ -245,6 +318,11 @@ int cocanb_encode(const char *__text, char **__dest, int __maxq)
     int suf_len = strlen(suf_stack[suf_ptr]);
     suf_stack[suf_ptr] = realloc(suf_stack[suf_ptr], (suf_len + quotient + 3) * sizeof(char));
     if (suf_stack[suf_ptr] == NULL) {
+      free(*__dest);
+      free(word);
+      while (--suf_ptr != -1) {
+        free(suf_stack[suf_ptr]);
+      }
       return 1;
     }
     suf_stack[suf_ptr][suf_len] = tolower(word[word_len - 1]);
@@ -263,6 +341,11 @@ int cocanb_encode(const char *__text, char **__dest, int __maxq)
     free(suf_stack[suf_ptr--]);
     *__dest = calloc(temp_len + 1, sizeof(char));
     if (*__dest == NULL) {
+      free(*__dest);
+      free(word);
+      while (suf_ptr != -1) {
+        free(suf_stack[suf_ptr--]);
+      }
       return 1;
     }
     strcpy(*__dest, temp);
@@ -270,7 +353,12 @@ int cocanb_encode(const char *__text, char **__dest, int __maxq)
 
   if (suf_ptr != -1) {
     if (qt_ptr != -1) {
-      return 1;
+      free(*__dest);
+      free(word);
+      while (suf_ptr != -1) {
+        free(suf_stack[suf_ptr--]);
+      }
+      return 2;
     }
     char temp[strlen(*__dest) + strlen(suf_stack[suf_ptr])];
     int temp_len = strlen(*__dest) + strlen(suf_stack[suf_ptr]);
@@ -280,6 +368,10 @@ int cocanb_encode(const char *__text, char **__dest, int __maxq)
     free(suf_stack[suf_ptr--]);
     *__dest = calloc(temp_len + 1, sizeof(char));
     if (*__dest == NULL) {
+      free(word);
+      while (suf_ptr != -1) {
+        free(suf_stack[suf_ptr--]);
+      }
       return 1;
     }
     strcpy(*__dest, temp);
