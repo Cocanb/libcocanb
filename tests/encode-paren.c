@@ -34,7 +34,7 @@ START_TEST(test_angle)
   char *output;
   const char *input = "Hello <world>";
   ck_assert_int_eq(cocanb_encode(input, &output, 1), 0);
-  ck_assert_str_eq(output, "hell<world>>nonoe");
+  ck_assert_str_eq(output, "hell<world>nonoe");
 }
 END_TEST
 
@@ -45,8 +45,8 @@ int main()
   TCase *tc;
   SRunner *sr;
 
-  s = suite_create("Cocánb Quote Tests");
-  tc = tcase_create("Quotes");
+  s = suite_create("Cocánb Parenthesis/Brackets Tests");
+  tc = tcase_create("Brackets");
   tcase_add_test(tc, test_paren);
   tcase_add_test(tc, test_angle);
   suite_add_tcase(s, tc);

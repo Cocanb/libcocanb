@@ -45,8 +45,8 @@ int main()
   TCase *tc;
   SRunner *sr;
 
-  s = suite_create("Cocánb Quote Tests");
-  tc = tcase_create("Quotes");
+  s = suite_create("Cocánb Number Tests");
+  tc = tcase_create("Number");
   tcase_add_test(tc, test_number_separate);
   tcase_add_test(tc, test_number_embedded);
   suite_add_tcase(s, tc);
