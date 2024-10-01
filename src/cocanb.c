@@ -1,6 +1,7 @@
 #include "cocanb.h"
+#include <stdlib.h>
 
-const char *cocanb_encode(const char *input)
+const char *cocanb_encode(const char *__text)
 {
-  return input;
+  return __text;
 }

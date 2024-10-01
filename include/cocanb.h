@@ -5,7 +5,7 @@
 extern "C" {
 #endif
 
-const char *cocanb_encode(const char *input);
+const char *cocanb_encode(const char *__text);
 
 #ifdef __cplusplus
 }

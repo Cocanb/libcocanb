@@ -7,5 +7,5 @@ libcocanb_a_CFLAGS = -I$(top_builddir)/include
 TESTS = cocanb_test
 check_PROGRAMS = cocanb_test
 cocanb_test_SOURCES = $(top_builddir)/tests/cocanb.test.c $(top_builddir)/include/cocanb.h
-cocanb_test_CFLAGS = @CHECK_CFLAGS@
+cocanb_test_CFLAGS = @CHECK_CFLAGS@ -I$(top_builddir)/include
 cocanb_test_LDADD = libcocanb.a @CHECK_LIBS@
