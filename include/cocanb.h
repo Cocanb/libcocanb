@@ -19,8 +19,8 @@
 #ifndef __COCANB_H__
 #define __COCANB_H__
 
-#define COCANB_NOERR 0;
-#define COCANB_ERR 1;
+#define COCANB_NOERR 0
+#define COCANB_ERR 1
 
 #ifdef __cplusplus
 extern "C" {
