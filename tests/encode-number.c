@@ -26,6 +26,7 @@ START_TEST(test_number_separate)
   const char *input = "I have 5 apples.";
   ck_assert_int_eq(cocanb_encode(input, &output, 1), 0);
   ck_assert_str_eq(output, "hav5applenoniaedsf.");
+  cocanb_free(output);
 }
 END_TEST
 
@@ -35,6 +36,7 @@ START_TEST(test_number_embedded)
   const char *input = "he110";
   ck_assert_int_eq(cocanb_encode(input, &output, 1), 0);
   ck_assert_str_eq(output, "henon110c");
+  cocanb_free(output);
 }
 END_TEST
 
@@ -44,6 +46,7 @@ START_TEST(test_number_inside)
   const char *input = "help2man";
   ck_assert_int_eq(cocanb_encode(input, &output, 1), 0);
   ck_assert_str_eq(output, "help2manonnh");
+  cocanb_free(output);
 }
 
 START_TEST(test_number_float)
@@ -52,6 +55,7 @@ START_TEST(test_number_float)
   const char *input = "foo1.2";
   ck_assert_int_eq(cocanb_encode(input, &output, 1), 0);
   ck_assert_str_eq(output, "foonon1.2d");
+  cocanb_free(output);
 }
 
 int main()

@@ -26,6 +26,7 @@ START_TEST(test_basic)
   const char *input = "Hello world";
   ck_assert_int_eq(cocanb_encode(input, &output, 0), 0);
   ck_assert_str_eq(output, "hellworlnonoede");
+  cocanb_free(output);
 }
 END_TEST
 
@@ -35,6 +36,7 @@ START_TEST(test_punctuation)
   const char *input = "Hello world!";
   ck_assert_int_eq(cocanb_encode(input, &output, 0), 0);
   ck_assert_str_eq(output, "hellworlnonoede!");
+  cocanb_free(output);
 }
 END_TEST
 
@@ -44,6 +46,7 @@ START_TEST(test_space_punctuation)
   const char *input = "Hello world !";
   ck_assert_int_eq(cocanb_encode(input, &output, 0), 0);
   ck_assert_str_eq(output, "hellworlnonoede!");
+  cocanb_free(output);
 }
 END_TEST
 
@@ -53,6 +56,7 @@ START_TEST(test_multi_sentence)
   const char *input = "Hello! World?";
   ck_assert_int_eq(cocanb_encode(input, &output, 0), 0);
   ck_assert_str_eq(output, "hellnonoe!worlnonde?");
+  cocanb_free(output);
 }
 END_TEST
 

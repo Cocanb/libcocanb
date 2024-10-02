@@ -26,6 +26,7 @@ START_TEST(test_basic_quotes)
   const char *input = "Hello \"world\"";
   ck_assert_int_eq(cocanb_encode(input, &output, 1), 0);
   ck_assert_str_eq(output, "hell\"worlnonde\"nonoe");
+  cocanb_free(output);
 }
 END_TEST
 
@@ -35,6 +36,7 @@ START_TEST(test_2_nested_quotes)
   const char *input = "Hello \"foo \'bar\'\"";
   ck_assert_int_eq(cocanb_encode(input, &output, 2), 0);
   ck_assert_str_eq(output, "hell\"fo\'banonrc\'nonoc\"nonoe");
+  cocanb_free(output);
 }
 END_TEST
 
@@ -44,6 +46,7 @@ START_TEST(test_3_nested_quotes)
   const char *input = "Hello \"foo \'bar \"baz\"\'\"";
   ck_assert_int_eq(cocanb_encode(input, &output, 3), 0);
   ck_assert_str_eq(output, "hell\"fo\'ba\"banonzc\"nonrc\'nonoc\"nonoe");
+  cocanb_free(output);
 }
 END_TEST
 
@@ -53,6 +56,7 @@ START_TEST(test_quotes_with_punctuation)
   const char *input = "Hello \"foo. bar.\"";
   ck_assert_int_eq(cocanb_encode(input, &output, 1), 0);
   ck_assert_str_eq(output, "hell\"fononoc.banonrc.\"nonoe");
+  cocanb_free(output);
 }
 END_TEST
 

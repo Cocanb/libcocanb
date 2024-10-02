@@ -26,6 +26,7 @@ START_TEST(test_paren)
   const char *input = "Hello (world)";
   ck_assert_int_eq(cocanb_encode(input, &output, 1), 0);
   ck_assert_str_eq(output, "hell(worlnonde)nonoe");
+  cocanb_free(output);
 }
 END_TEST
 
@@ -35,6 +36,7 @@ START_TEST(test_angle)
   const char *input = "Hello <world>";
   ck_assert_int_eq(cocanb_encode(input, &output, 1), 0);
   ck_assert_str_eq(output, "hell<world>nonoe");
+  cocanb_free(output);
 }
 END_TEST
 

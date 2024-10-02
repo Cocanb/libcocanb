@@ -609,3 +609,5 @@ int cocanb_encode(const char *text, char **dest, int maxq)
 
   return 0;
 }
+
+void cocanb_free(char *text) { free(text); }

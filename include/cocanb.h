@@ -48,6 +48,16 @@ extern "C" {
  */
 int cocanb_encode(const char *text, char **dest, int maxq);
 
+/**
+ * @brief Frees used memory
+ *
+ * Frees the memory allocated from Cocánb encoding. This only exists so I don't
+ * have to include `<stdlib.h>` just for this half feature.
+ *
+ * @param[in] text Text to free
+ */
+void cocanb_free(char *text);
+
 #ifdef __cplusplus
 }
 #endif
