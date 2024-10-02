@@ -1,7 +1,7 @@
 AUTOMAKE_OPTIONS = foreign subdir-objects
 
 lib_LIBRARIES = libcocanb.a
-libcocanb_a_SOURCES = $(top_builddir)/src/core/encode.c $(top_builddir)/include/cocanb.h
+libcocanb_a_SOURCES = $(top_builddir)/src/encode.c $(top_builddir)/include/cocanb.h
 libcocanb_a_CFLAGS = -I$(top_builddir)/include -Wall
 
 TESTS = cocanb_test_encode_basic cocanb_test_encode_quote cocanb_test_encode_number cocanb_test_encode_paren
