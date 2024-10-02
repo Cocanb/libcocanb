@@ -21,6 +21,53 @@
 #include <stdlib.h>
 #include <string.h>
 
+int __cocanb_append_word(
+  char **suf_top, char **word, int *word_len, char **dest)
+{
+  if (*word_len != 0) {
+    int counted_wl = *word_len;
+    int quotient = counted_wl / 26;
+    int remainder = counted_wl % 26;
+    int suf_len = strlen(*suf_top);
+    *suf_top = realloc(*suf_top, (suf_len + quotient + 3) * sizeof(char));
+    if (*suf_top == NULL) {
+      free(*dest);
+      free(*word);
+      free(*suf_top);
+      return 1;
+    }
+
+    (*suf_top)[suf_len] = tolower((*word)[*word_len - 1]);
+    for (int j = 0; j < quotient; j++) {
+      (*suf_top)[suf_len + j + 1] = '@';
+    }
+    (*suf_top)[suf_len + quotient + 1] = 96 + remainder;
+    (*suf_top)[suf_len + quotient + 2] = 0;
+
+    char temp[strlen(*dest) + *word_len];
+    strcpy(temp, *dest);
+    strncat(temp, *word, *word_len - 1);
+    free(*dest);
+    *dest = calloc(strlen(*dest) + *word_len, sizeof(char));
+    if (*dest == NULL) {
+      free(*word);
+      free(*suf_top);
+      return 1;
+    }
+    strcpy(*dest, temp);
+
+    free(*word);
+    *word = calloc(1, sizeof(char));
+    if (*word == NULL) {
+      free(*dest);
+      free(*suf_top);
+      return 1;
+    }
+    *word_len = 0;
+  }
+  return 0;
+}
+
 int cocanb_encode(const char *text, char **dest, int maxq)
 {
   *dest = calloc(1, sizeof(char));
@@ -68,104 +115,26 @@ int cocanb_encode(const char *text, char **dest, int maxq)
     case '\r':
     case '\t':
     case '\v':
-      if (word_len != 0) {
-        int quotient = word_len / 26;
-        int remainder = word_len % 26;
-        int suf_len = strlen(suf_stack[suf_ptr]);
-        suf_stack[suf_ptr] = realloc(suf_stack[suf_ptr], (suf_len + quotient + 3) * sizeof(char));
-        if (suf_stack[suf_ptr] == NULL) {
-          free(dest);
-          free(word);
-          while (--suf_ptr != -1) {
-            free(suf_stack[suf_ptr]);
-          }
-          return 1;
-        }
-        suf_stack[suf_ptr][suf_len] = tolower(word[word_len - 1]);
-        for (int j = 0; j < quotient; j++) {
-          suf_stack[suf_ptr][suf_len + j + 1] = '@';
-        }
-        suf_stack[suf_ptr][suf_len + quotient + 1] = 96 + remainder;
-        suf_stack[suf_ptr][suf_len + quotient + 2] = 0;
 
-        char temp[strlen(*dest) + word_len];
-        strcpy(temp, *dest);
-        strncat(temp, word, word_len - 1);
-        free(*dest);
-        *dest = calloc(strlen(*dest) + word_len, sizeof(char));
-        if (*dest == NULL) {
-          free(word);
-          while (suf_ptr != -1) {
-            free(suf_stack[suf_ptr--]);
-          }
-          return 1;
+      if (__cocanb_append_word(&suf_stack[suf_ptr], &word, &word_len, dest)) {
+        while (--suf_ptr != -1) {
+          free(suf_stack[suf_ptr]);
         }
-        strcpy(*dest, temp);
-
-        free(word);
-        word = calloc(1, sizeof(char));
-        if (word == NULL) {
-          free(*dest);
-          while (suf_ptr != -1) {
-            free(suf_stack[suf_ptr--]);
-          }
-          return 1;
-        }
-        word_len = 0;
+        return 1;
       }
+
       break;
     case '.':
     case '?':
     case '!':
-      if (word_len != 0) {
-        int quotient = word_len / 26;
-        int remainder = word_len % 26;
-        int suf_len = strlen(suf_stack[suf_ptr]);
-        suf_stack[suf_ptr] = realloc(suf_stack[suf_ptr], (suf_len + quotient + 3) * sizeof(char));
-        if (suf_stack[suf_ptr] == NULL) {
-          free(*dest);
-          free(word);
-          while (--suf_ptr != -1) {
-            free(suf_stack[suf_ptr]);
-          }
-          return 1;
+      if (__cocanb_append_word(&suf_stack[suf_ptr], &word, &word_len, dest)) {
+        while (--suf_ptr != -1) {
+          free(suf_stack[suf_ptr]);
         }
-        suf_stack[suf_ptr][suf_len] = tolower(word[word_len - 1]);
-        for (int j = 0; j < quotient; j++) {
-          suf_stack[suf_ptr][suf_len + j + 1] = '@';
-        }
-        suf_stack[suf_ptr][suf_len + 1] = 96 + remainder;
-        suf_stack[suf_ptr][suf_len + 2] = 0;
+        return 1;
+      }
+      {
 
-        char temp[strlen(*dest) + word_len + suf_len + quotient + 2];
-        int temp_len = strlen(*dest) + word_len + suf_len + quotient + 1;
-        strcpy(temp, *dest);
-        strncat(temp, word, word_len - 1);
-        strcat(temp, suf_stack[suf_ptr]);
-        free(*dest);
-        free(suf_stack[suf_ptr--]);
-        *dest = calloc(temp_len + 2, sizeof(char));
-        if (*dest == NULL) {
-          free(word);
-          while (suf_ptr != -1) {
-            free(suf_stack[suf_ptr--]);
-          }
-          return 1;
-        }
-        strcpy(*dest, temp);
-        (*dest)[temp_len] = text[i];
-
-        free(word);
-        word = calloc(1, sizeof(char));
-        if (word == NULL) {
-          free(*dest);
-          while (suf_ptr != -1) {
-            free(suf_stack[suf_ptr--]);
-          }
-          return 1;
-        }
-        word_len = 0;
-      } else {
         int suf_len = strlen(suf_stack[suf_ptr]);
         char temp[strlen(*dest) + suf_len + 1];
         int temp_len = strlen(*dest) + suf_len;
@@ -198,47 +167,13 @@ int cocanb_encode(const char *text, char **dest, int maxq)
       break;
     case '\"':
     case '\'':
-      if (word_len != 0) {
-        int quotient = word_len / 26;
-        int remainder = word_len % 26;
-        int suf_len = strlen(suf_stack[suf_ptr]);
-        suf_stack[suf_ptr] = realloc(suf_stack[suf_ptr], (suf_len + quotient + 3) * sizeof(char));
-        if (suf_stack[suf_ptr] == NULL) {
-          free(*dest);
-          free(word);
-          while (--suf_ptr != -1) {
-            free(suf_stack[suf_ptr]);
-          }
-          return 1;
+      if (__cocanb_append_word(&suf_stack[suf_ptr], &word, &word_len, dest)) {
+        while (--suf_ptr != -1) {
+          free(suf_stack[suf_ptr]);
         }
-        suf_stack[suf_ptr][suf_len] = tolower(word[word_len - 1]);
-        for (int j = 0; j < quotient; j++) {
-          suf_stack[suf_ptr][suf_len + j + 1] = '@';
-        }
-        suf_stack[suf_ptr][suf_len + quotient + 1] = 96 + remainder;
-        suf_stack[suf_ptr][suf_len + quotient + 2] = 0;
-
-        char temp[strlen(*dest) + word_len];
-        strcpy(temp, *dest);
-        strncat(temp, word, word_len - 1);
-        free(*dest);
-        *dest = calloc(strlen(*dest) + word_len, sizeof(char));
-        if (*dest == NULL) {
-          return 1;
-        }
-        strcpy(*dest, temp);
-
-        free(word);
-        word = calloc(1, sizeof(char));
-        if (word == NULL) {
-          free(*dest);
-          while (suf_ptr != -1) {
-            free(suf_stack[suf_ptr--]);
-          }
-          return 1;
-        }
-        word_len = 0;
+        return 1;
       }
+
       if (qt_ptr == -1 || qt_stack[qt_ptr] != text[i]) {
         if (qt_ptr + 1 >= maxq) {
           free(*dest);
@@ -293,46 +228,11 @@ int cocanb_encode(const char *text, char **dest, int maxq)
       }
       break;
     case '(':
-      if (word_len != 0) {
-        int quotient = word_len / 26;
-        int remainder = word_len % 26;
-        int suf_len = strlen(suf_stack[suf_ptr]);
-        suf_stack[suf_ptr] = realloc(suf_stack[suf_ptr], (suf_len + quotient + 3) * sizeof(char));
-        if (suf_stack[suf_ptr] == NULL) {
-          free(*dest);
-          free(word);
-          while (--suf_ptr != -1) {
-            free(suf_stack[suf_ptr]);
-          }
-          return 1;
+      if (__cocanb_append_word(&suf_stack[suf_ptr], &word, &word_len, dest)) {
+        while (--suf_ptr != -1) {
+          free(suf_stack[suf_ptr]);
         }
-        suf_stack[suf_ptr][suf_len] = tolower(word[word_len - 1]);
-        for (int j = 0; j < quotient; j++) {
-          suf_stack[suf_ptr][suf_len + j + 1] = '@';
-        }
-        suf_stack[suf_ptr][suf_len + quotient + 1] = 96 + remainder;
-        suf_stack[suf_ptr][suf_len + quotient + 2] = 0;
-
-        char temp[strlen(*dest) + word_len];
-        strcpy(temp, *dest);
-        strncat(temp, word, word_len - 1);
-        free(*dest);
-        *dest = calloc(strlen(*dest) + word_len, sizeof(char));
-        if (*dest == NULL) {
-          return 1;
-        }
-        strcpy(*dest, temp);
-
-        free(word);
-        word = calloc(1, sizeof(char));
-        if (word == NULL) {
-          free(*dest);
-          while (suf_ptr != -1) {
-            free(suf_stack[suf_ptr--]);
-          }
-          return 1;
-        }
-        word_len = 0;
+        return 1;
       }
       if (qt_ptr + 1 >= maxq) {
         free(*dest);
@@ -353,47 +253,13 @@ int cocanb_encode(const char *text, char **dest, int maxq)
       }
       break;
     case ')':
-      if (word_len != 0) {
-        int quotient = word_len / 26;
-        int remainder = word_len % 26;
-        int suf_len = strlen(suf_stack[suf_ptr]);
-        suf_stack[suf_ptr] = realloc(suf_stack[suf_ptr], (suf_len + quotient + 3) * sizeof(char));
-        if (suf_stack[suf_ptr] == NULL) {
-          free(*dest);
-          free(word);
-          while (--suf_ptr != -1) {
-            free(suf_stack[suf_ptr]);
-          }
-          return 1;
+      if (__cocanb_append_word(&suf_stack[suf_ptr], &word, &word_len, dest)) {
+        while (--suf_ptr != -1) {
+          free(suf_stack[suf_ptr]);
         }
-        suf_stack[suf_ptr][suf_len] = tolower(word[word_len - 1]);
-        for (int j = 0; j < quotient; j++) {
-          suf_stack[suf_ptr][suf_len + j + 1] = '@';
-        }
-        suf_stack[suf_ptr][suf_len + quotient + 1] = 96 + remainder;
-        suf_stack[suf_ptr][suf_len + quotient + 2] = 0;
-
-        char temp[strlen(*dest) + word_len];
-        strcpy(temp, *dest);
-        strncat(temp, word, word_len - 1);
-        free(*dest);
-        *dest = calloc(strlen(*dest) + word_len, sizeof(char));
-        if (*dest == NULL) {
-          return 1;
-        }
-        strcpy(*dest, temp);
-
-        free(word);
-        word = calloc(1, sizeof(char));
-        if (word == NULL) {
-          free(*dest);
-          while (suf_ptr != -1) {
-            free(suf_stack[suf_ptr--]);
-          }
-          return 1;
-        }
-        word_len = 0;
+        return 1;
       }
+
       if (qt_ptr != -1 && qt_stack[qt_ptr] == '(') {
         if (suf_ptr != qt_ptr--) {
           char temp[strlen(*dest) + strlen(suf_stack[suf_ptr]) + 1];
@@ -426,47 +292,13 @@ int cocanb_encode(const char *text, char **dest, int maxq)
       }
       break;
     case '[':
-      if (word_len != 0) {
-        int quotient = word_len / 26;
-        int remainder = word_len % 26;
-        int suf_len = strlen(suf_stack[suf_ptr]);
-        suf_stack[suf_ptr] = realloc(suf_stack[suf_ptr], (suf_len + quotient + 3) * sizeof(char));
-        if (suf_stack[suf_ptr] == NULL) {
-          free(*dest);
-          free(word);
-          while (--suf_ptr != -1) {
-            free(suf_stack[suf_ptr]);
-          }
-          return 1;
+      if (__cocanb_append_word(&suf_stack[suf_ptr], &word, &word_len, dest)) {
+        while (--suf_ptr != -1) {
+          free(suf_stack[suf_ptr]);
         }
-        suf_stack[suf_ptr][suf_len] = tolower(word[word_len - 1]);
-        for (int j = 0; j < quotient; j++) {
-          suf_stack[suf_ptr][suf_len + j + 1] = '@';
-        }
-        suf_stack[suf_ptr][suf_len + quotient + 1] = 96 + remainder;
-        suf_stack[suf_ptr][suf_len + quotient + 2] = 0;
-
-        char temp[strlen(*dest) + word_len];
-        strcpy(temp, *dest);
-        strncat(temp, word, word_len - 1);
-        free(*dest);
-        *dest = calloc(strlen(*dest) + word_len, sizeof(char));
-        if (*dest == NULL) {
-          return 1;
-        }
-        strcpy(*dest, temp);
-
-        free(word);
-        word = calloc(1, sizeof(char));
-        if (word == NULL) {
-          free(*dest);
-          while (suf_ptr != -1) {
-            free(suf_stack[suf_ptr--]);
-          }
-          return 1;
-        }
-        word_len = 0;
+        return 1;
       }
+
       if (qt_ptr + 1 >= maxq) {
         free(*dest);
         free(word);
@@ -486,47 +318,13 @@ int cocanb_encode(const char *text, char **dest, int maxq)
       }
       break;
     case ']':
-      if (word_len != 0) {
-        int quotient = word_len / 26;
-        int remainder = word_len % 26;
-        int suf_len = strlen(suf_stack[suf_ptr]);
-        suf_stack[suf_ptr] = realloc(suf_stack[suf_ptr], (suf_len + quotient + 3) * sizeof(char));
-        if (suf_stack[suf_ptr] == NULL) {
-          free(*dest);
-          free(word);
-          while (--suf_ptr != -1) {
-            free(suf_stack[suf_ptr]);
-          }
-          return 1;
+      if (__cocanb_append_word(&suf_stack[suf_ptr], &word, &word_len, dest)) {
+        while (--suf_ptr != -1) {
+          free(suf_stack[suf_ptr]);
         }
-        suf_stack[suf_ptr][suf_len] = tolower(word[word_len - 1]);
-        for (int j = 0; j < quotient; j++) {
-          suf_stack[suf_ptr][suf_len + j + 1] = '@';
-        }
-        suf_stack[suf_ptr][suf_len + quotient + 1] = 96 + remainder;
-        suf_stack[suf_ptr][suf_len + quotient + 2] = 0;
-
-        char temp[strlen(*dest) + word_len];
-        strcpy(temp, *dest);
-        strncat(temp, word, word_len - 1);
-        free(*dest);
-        *dest = calloc(strlen(*dest) + word_len, sizeof(char));
-        if (*dest == NULL) {
-          return 1;
-        }
-        strcpy(*dest, temp);
-
-        free(word);
-        word = calloc(1, sizeof(char));
-        if (word == NULL) {
-          free(*dest);
-          while (suf_ptr != -1) {
-            free(suf_stack[suf_ptr--]);
-          }
-          return 1;
-        }
-        word_len = 0;
+        return 1;
       }
+
       if (qt_ptr != -1 && qt_stack[qt_ptr] == '[') {
         if (suf_ptr != qt_ptr--) {
           char temp[strlen(*dest) + strlen(suf_stack[suf_ptr]) + 1];
@@ -559,46 +357,11 @@ int cocanb_encode(const char *text, char **dest, int maxq)
       }
       break;
     case '{':
-      if (word_len != 0) {
-        int quotient = word_len / 26;
-        int remainder = word_len % 26;
-        int suf_len = strlen(suf_stack[suf_ptr]);
-        suf_stack[suf_ptr] = realloc(suf_stack[suf_ptr], (suf_len + quotient + 3) * sizeof(char));
-        if (suf_stack[suf_ptr] == NULL) {
-          free(*dest);
-          free(word);
-          while (--suf_ptr != -1) {
-            free(suf_stack[suf_ptr]);
-          }
-          return 1;
+      if (__cocanb_append_word(&suf_stack[suf_ptr], &word, &word_len, dest)) {
+        while (--suf_ptr != -1) {
+          free(suf_stack[suf_ptr]);
         }
-        suf_stack[suf_ptr][suf_len] = tolower(word[word_len - 1]);
-        for (int j = 0; j < quotient; j++) {
-          suf_stack[suf_ptr][suf_len + j + 1] = '@';
-        }
-        suf_stack[suf_ptr][suf_len + quotient + 1] = 96 + remainder;
-        suf_stack[suf_ptr][suf_len + quotient + 2] = 0;
-
-        char temp[strlen(*dest) + word_len];
-        strcpy(temp, *dest);
-        strncat(temp, word, word_len - 1);
-        free(*dest);
-        *dest = calloc(strlen(*dest) + word_len, sizeof(char));
-        if (*dest == NULL) {
-          return 1;
-        }
-        strcpy(*dest, temp);
-
-        free(word);
-        word = calloc(1, sizeof(char));
-        if (word == NULL) {
-          free(*dest);
-          while (suf_ptr != -1) {
-            free(suf_stack[suf_ptr--]);
-          }
-          return 1;
-        }
-        word_len = 0;
+        return 1;
       }
       if (qt_ptr + 1 >= maxq) {
         free(*dest);
@@ -619,47 +382,13 @@ int cocanb_encode(const char *text, char **dest, int maxq)
       }
       break;
     case '}':
-      if (word_len != 0) {
-        int quotient = word_len / 26;
-        int remainder = word_len % 26;
-        int suf_len = strlen(suf_stack[suf_ptr]);
-        suf_stack[suf_ptr] = realloc(suf_stack[suf_ptr], (suf_len + quotient + 3) * sizeof(char));
-        if (suf_stack[suf_ptr] == NULL) {
-          free(*dest);
-          free(word);
-          while (--suf_ptr != -1) {
-            free(suf_stack[suf_ptr]);
-          }
-          return 1;
+      if (__cocanb_append_word(&suf_stack[suf_ptr], &word, &word_len, dest)) {
+        while (--suf_ptr != -1) {
+          free(suf_stack[suf_ptr]);
         }
-        suf_stack[suf_ptr][suf_len] = tolower(word[word_len - 1]);
-        for (int j = 0; j < quotient; j++) {
-          suf_stack[suf_ptr][suf_len + j + 1] = '@';
-        }
-        suf_stack[suf_ptr][suf_len + quotient + 1] = 96 + remainder;
-        suf_stack[suf_ptr][suf_len + quotient + 2] = 0;
-
-        char temp[strlen(*dest) + word_len];
-        strcpy(temp, *dest);
-        strncat(temp, word, word_len - 1);
-        free(*dest);
-        *dest = calloc(strlen(*dest) + word_len, sizeof(char));
-        if (*dest == NULL) {
-          return 1;
-        }
-        strcpy(*dest, temp);
-
-        free(word);
-        word = calloc(1, sizeof(char));
-        if (word == NULL) {
-          free(*dest);
-          while (suf_ptr != -1) {
-            free(suf_stack[suf_ptr--]);
-          }
-          return 1;
-        }
-        word_len = 0;
+        return 1;
       }
+
       if (qt_ptr != -1 && qt_stack[qt_ptr] == '{') {
         if (suf_ptr != qt_ptr--) {
           char temp[strlen(*dest) + strlen(suf_stack[suf_ptr]) + 1];
@@ -692,47 +421,13 @@ int cocanb_encode(const char *text, char **dest, int maxq)
       }
       break;
     case '<':
-      if (word_len != 0) {
-        int quotient = word_len / 26;
-        int remainder = word_len % 26;
-        int suf_len = strlen(suf_stack[suf_ptr]);
-        suf_stack[suf_ptr] = realloc(suf_stack[suf_ptr], (suf_len + quotient + 3) * sizeof(char));
-        if (suf_stack[suf_ptr] == NULL) {
-          free(*dest);
-          free(word);
-          while (--suf_ptr != -1) {
-            free(suf_stack[suf_ptr]);
-          }
-          return 1;
+      if (__cocanb_append_word(&suf_stack[suf_ptr], &word, &word_len, dest)) {
+        while (--suf_ptr != -1) {
+          free(suf_stack[suf_ptr]);
         }
-        suf_stack[suf_ptr][suf_len] = tolower(word[word_len - 1]);
-        for (int j = 0; j < quotient; j++) {
-          suf_stack[suf_ptr][suf_len + j + 1] = '@';
-        }
-        suf_stack[suf_ptr][suf_len + quotient + 1] = 96 + remainder;
-        suf_stack[suf_ptr][suf_len + quotient + 2] = 0;
-
-        char temp[strlen(*dest) + word_len];
-        strcpy(temp, *dest);
-        strncat(temp, word, word_len - 1);
-        free(*dest);
-        *dest = calloc(strlen(*dest) + word_len, sizeof(char));
-        if (*dest == NULL) {
-          return 1;
-        }
-        strcpy(*dest, temp);
-
-        free(word);
-        word = calloc(1, sizeof(char));
-        if (word == NULL) {
-          free(*dest);
-          while (suf_ptr != -1) {
-            free(suf_stack[suf_ptr--]);
-          }
-          return 1;
-        }
-        word_len = 0;
+        return 1;
       }
+
       if (qt_ptr + 1 >= maxq) {
         free(*dest);
         free(word);
@@ -753,6 +448,23 @@ int cocanb_encode(const char *text, char **dest, int maxq)
     case ':':
     case ';':
       break;
+    case '0':
+    case '1':
+    case '2':
+    case '3':
+    case '4':
+    case '5':
+    case '6':
+    case '7':
+    case '8':
+    case '9':
+      if (word_len == 0) {
+        int len = strlen(*dest);
+        *dest = realloc(*dest, (len + 2) * sizeof(char));
+        (*dest)[len] = text[i];
+        (*dest)[len + 1] = 0;
+        break;
+      }
     default:
       if (suf_ptr == qt_ptr) {
         suf_stack[++suf_ptr] = calloc(4, sizeof(char));
@@ -780,43 +492,11 @@ int cocanb_encode(const char *text, char **dest, int maxq)
     }
   }
 
-  if (word_len != 0) {
-    int quotient = word_len / 26;
-    int remainder = word_len % 26;
-    int suf_len = strlen(suf_stack[suf_ptr]);
-    suf_stack[suf_ptr] = realloc(suf_stack[suf_ptr], (suf_len + quotient + 3) * sizeof(char));
-    if (suf_stack[suf_ptr] == NULL) {
-      free(*dest);
-      free(word);
-      while (--suf_ptr != -1) {
-        free(suf_stack[suf_ptr]);
-      }
-      return 1;
+  if (__cocanb_append_word(&suf_stack[suf_ptr], &word, &word_len, dest)) {
+    while (--suf_ptr != -1) {
+      free(suf_stack[suf_ptr]);
     }
-    suf_stack[suf_ptr][suf_len] = tolower(word[word_len - 1]);
-    for (int j = 0; j < quotient; j++) {
-      suf_stack[suf_ptr][suf_len + j + 1] = '@';
-    }
-    suf_stack[suf_ptr][suf_len + 1] = 96 + remainder;
-    suf_stack[suf_ptr][suf_len + 2] = 0;
-
-    char temp[strlen(*dest) + word_len + suf_len + quotient + 2];
-    int temp_len = strlen(*dest) + word_len + suf_len + quotient + 1;
-    strcpy(temp, *dest);
-    strncat(temp, word, word_len - 1);
-    strcat(temp, suf_stack[suf_ptr]);
-    free(*dest);
-    free(suf_stack[suf_ptr--]);
-    *dest = calloc(temp_len + 1, sizeof(char));
-    if (*dest == NULL) {
-      free(*dest);
-      free(word);
-      while (suf_ptr != -1) {
-        free(suf_stack[suf_ptr--]);
-      }
-      return 1;
-    }
-    strcpy(*dest, temp);
+    return 1;
   }
 
   if (suf_ptr != -1) {

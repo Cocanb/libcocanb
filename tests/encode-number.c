@@ -25,7 +25,7 @@ START_TEST(test_number_separate)
   char *output;
   const char *input = "I have 5 apples.";
   ck_assert_int_eq(cocanb_encode(input, &output, 1), 0);
-  ck_assert_str_eq(output, "hav5applenoniaecsf.");
+  ck_assert_str_eq(output, "hav5applenoniaedsf.");
 }
 END_TEST
 
