@@ -38,6 +38,22 @@ START_TEST(test_number_embedded)
 }
 END_TEST
 
+START_TEST(test_number_inside)
+{
+  char *output;
+  const char *input = "help2man";
+  ck_assert_int_eq(cocanb_encode(input, &output, 1), 0);
+  ck_assert_str_eq(output, "help2manonnh");
+}
+
+START_TEST(test_number_float)
+{
+  char *output;
+  const char *input = "foo1.2";
+  ck_assert_int_eq(cocanb_encode(input, &output, 1), 0);
+  ck_assert_str_eq(output, "foonon1.2d");
+}
+
 int main()
 {
   int n_failed;
@@ -49,6 +65,8 @@ int main()
   tc = tcase_create("Number");
   tcase_add_test(tc, test_number_separate);
   tcase_add_test(tc, test_number_embedded);
+  tcase_add_test(tc, test_number_inside);
+  tcase_add_test(tc, test_number_float);
   suite_add_tcase(s, tc);
 
   sr = srunner_create(s);

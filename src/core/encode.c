@@ -25,11 +25,63 @@ int __cocanb_append_word(
   char **suf_top, char **word, int *word_len, char **dest)
 {
   if (*word_len != 0) {
-    int counted_wl = *word_len;
+    int counted_wl = 0;
+    int npos = -1;
+    for (int i = 0; i < *word_len; i++) {
+      if (npos == -1) {
+        switch ((*word)[i]) {
+        case '0':
+        case '1':
+        case '2':
+        case '3':
+        case '4':
+        case '5':
+        case '6':
+        case '7':
+        case '8':
+        case '9':
+        case '.':
+        case ',':
+          npos = i;
+          break;
+        default:
+          break;
+        }
+        ++counted_wl;
+      } else {
+        switch ((*word)[i]) {
+        case '0':
+        case '1':
+        case '2':
+        case '3':
+        case '4':
+        case '5':
+        case '6':
+        case '7':
+        case '8':
+        case '9':
+        case '.':
+        case ',':
+          break;
+        default:
+          npos = -1;
+          ++counted_wl;
+          break;
+        }
+      }
+    }
+
     int quotient = counted_wl / 26;
     int remainder = counted_wl % 26;
+    int nlen;
+    if (npos == -1) {
+      nlen = 1;
+    } else {
+      nlen = *word_len - npos;
+    }
     int suf_len = strlen(*suf_top);
-    *suf_top = realloc(*suf_top, (suf_len + quotient + 3) * sizeof(char));
+    *suf_top
+      = realloc(*suf_top, (suf_len + nlen + quotient + 2) * sizeof(char));
     if (*suf_top == NULL) {
       free(*dest);
       free(*word);
@@ -37,16 +89,18 @@ int __cocanb_append_word(
       return 1;
     }
 
-    (*suf_top)[suf_len] = tolower((*word)[*word_len - 1]);
-    for (int j = 0; j < quotient; j++) {
-      (*suf_top)[suf_len + j + 1] = '@';
+    for (int j = 0; j < nlen; j++) {
+      (*suf_top)[suf_len + j] = tolower((*word)[*word_len - nlen + j]);
     }
-    (*suf_top)[suf_len + quotient + 1] = 96 + remainder;
-    (*suf_top)[suf_len + quotient + 2] = 0;
+    for (int j = 0; j < quotient; j++) {
+      (*suf_top)[suf_len + nlen + j] = '@';
+    }
+    (*suf_top)[suf_len + nlen + quotient] = 96 + remainder;
+    (*suf_top)[suf_len + nlen + quotient + 1] = 0;
 
     char temp[strlen(*dest) + *word_len];
     strcpy(temp, *dest);
-    strncat(temp, *word, *word_len - 1);
+    strncat(temp, *word, *word_len - nlen);
     free(*dest);
     *dest = calloc(strlen(*dest) + *word_len, sizeof(char));
     if (*dest == NULL) {
@@ -125,6 +179,19 @@ int cocanb_encode(const char *text, char **dest, int maxq)
 
       break;
     case '.':
+      if (isdigit(text[i + 1])) {
+        word = realloc(word, (strlen(word) + 2) * sizeof(char));
+        if (word == NULL) {
+          free(*dest);
+          while (suf_ptr != -1) {
+            free(suf_stack[suf_ptr--]);
+          }
+          return 1;
+        }
+        word[word_len] = tolower(text[i]);
+        word[++word_len] = 0;
+        break;
+      }
     case '?':
     case '!':
       if (__cocanb_append_word(&suf_stack[suf_ptr], &word, &word_len, dest)) {
@@ -445,6 +512,19 @@ int cocanb_encode(const char *text, char **dest, int maxq)
       }
       break;
     case ',':
+      if (isdigit(text[i + 1])) {
+        word = realloc(word, (strlen(word) + 2) * sizeof(char));
+        if (word == NULL) {
+          free(*dest);
+          while (suf_ptr != -1) {
+            free(suf_stack[suf_ptr--]);
+          }
+          return 1;
+        }
+        word[word_len] = tolower(text[i]);
+        word[++word_len] = 0;
+        break;
+      }
     case ':':
     case ';':
       break;
